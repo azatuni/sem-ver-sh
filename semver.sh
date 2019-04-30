@@ -201,15 +201,13 @@ push_change_log
 push_tag
 }
 
-if [ $1 == "--help" ] || [ $1 == "-h" ]
-	then semversh_help && exit 0
-elif [ $# != 0 ]
-	then	if echo $@ | grep -q "\-b"
+if [ $# != 0 ]
+	then	if [ $1 == "--help" ] || [ $1 == "-h" ]
+			then semversh_help && exit 0
+		elif echo $@ | grep -q "\-b"
 			then	GIT_BRANCH=`echo $@| grep -o "\-b\ [a-zA-Z0-9]\{1,\}"| cut -d " " -f2`
 			else	GIT_BRANCH="master"
-		fi
-
-		if echo $@ | grep -q "\-\-dry\-run"
+		elif echo $@ | grep -q "\-\-dry\-run"
 			then	dry_run
 			else	full_run
 		fi

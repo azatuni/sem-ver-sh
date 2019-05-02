@@ -1,5 +1,5 @@
 #!/bin/bash
-#Version: 0.0.1
+#Version: 0.0.2
 
 MAJOR_VERSION_PATTERN="BREAKING CHANGE"
 MINOR_VERSION_PATTERN="feat:"
@@ -117,7 +117,7 @@ function parse_commit () {
 
 function analyze_change_log () {
 GIT_ROOT_DIR=`git rev-parse --show-toplevel`
-GIT_REMOTE_WEB_URL=`git config --get remote.origin.url| sed 's/.*@//;s/\.git//;s/\://'`
+GIT_REMOTE_WEB_URL=`git config --get remote.origin.url| sed 's/.*@//;s/\.git//;s/\:/\//'`
 test `pwd` != "$GIT_ROOT_DIR" && cd "$GIT_ROOT_DIR"
 if [ "$LATEST_VERSION" == "0.0.0" ]
 	then	BREAKING_CHANGE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "BREAKING"| grep  -Eo '[a-fA-F0-9]{5,40}' `

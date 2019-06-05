@@ -1,8 +1,10 @@
 #!/bin/bash
+#Version: 0.0.2
+
 MAJOR_VERSION_PATTERN="BREAKING CHANGE"
 MINOR_VERSION_PATTERN="feat:"
 PATCH_VERSION_PATTERN="fix: docs: style: refactor: perf: test: chore:"
-CHANGELOG_FILE="CHANGELOG.MD"
+#CHANGELOG_FILE="CHANGELOG.MD"
 
 function semversh_help () {
 echo -e "
@@ -22,7 +24,7 @@ if [ "$LATEST_VERSION" == "0.0.0" ]
 				git log --pretty=%s\ %H | grep -qi "^$MINOR_VERSION_PATTERN" && increment_version minor
 			;;
 			patch)
-				for pattern in "$PATCH_VERSION_PATTERN"
+				for pattern in $PATCH_VERSION_PATTERN
 				do
 					git log --pretty=%s\ %H | grep -qi ^$pattern && increment_version patch && break
 				done
@@ -92,29 +94,30 @@ function set_latest_sem_ver () {
 analyze_version major && test ! -z $NEW_VERSION && return
 analyze_version minor && test ! -z $NEW_VERSION && return
 analyze_version patch && test ! -z $NEW_VERSION && return
-if [ -z $NEW_VERSION ]
+if [ -z "$NEW_VERSION" ] 
         then    echo -e "No new version was set. Possibly wrong pattern/patterns for commit titles" && exit 4
 fi
 }
 
 function parse_commit () {
-if [ "$DRY_RUN" == "true" ]
-	then	echo -e "\n$1(s) is/are:"
+#if [ "$DRY_RUN" == "true" ]
+#	then	
+		echo -e "\n$1(s) is/are:"
 		for commit_hash in `echo $@| sed "s/$1//"`
 		do
-        		git show --quiet --pretty=format:%n%s%nAuthor\:\ %an\ \(%ae\)%nDate\:\ %ai%n%b%nURL\:\ https://$GIT_REMOTE_URL/commit/%h%n%n $commit_hash
+        		git show --quiet --pretty=format:%n%s%nAuthor\:\ %an\ \(%ae\)%nDate\:\ %ai%n%b%nURL\:\ https://$GIT_REMOTE_WEB_URL/commit/%h%n%n $commit_hash
 		done
-	else	echo -e "\n$1(s) is/are:" >> $CHANGELOG_FILE
-		for commit_hash in `echo $@| sed "s/$1//"`
-		do
-        		git show --quiet --pretty=format:%n%s%nAuthor\:\ %an\ \(%ae\)%nDate\:\ %ai%n%b%nURL\:\ https://$GIT_REMOTE_URL/commit/%h%n%n $commit_hash >> $CHANGELOG_FILE
-		done
-fi
+#	else	echo -e "\n$1(s) is/are:" >> $CHANGELOG_FILE
+#		for commit_hash in `echo $@| sed "s/$1//"`
+#		do
+#        		git show --quiet --pretty=format:%n%s%nAuthor\:\ %an\ \(%ae\)%nDate\:\ %ai%n%b%nURL\:\ https://$GIT_REMOTE_WEB_URL/commit/%h%n%n $commit_hash >> $CHANGELOG_FILE
+#		done
+#fi
 }
 
 function analyze_change_log () {
 GIT_ROOT_DIR=`git rev-parse --show-toplevel`
-GIT_REMOTE_URL=`git config --get remote.origin.url| sed 's/.*@//;s/\.git//'`
+GIT_REMOTE_WEB_URL=`git config --get remote.origin.url| sed 's/.*@//;s/\.git//;s/\:/\//'`
 test `pwd` != "$GIT_ROOT_DIR" && cd "$GIT_ROOT_DIR"
 if [ "$LATEST_VERSION" == "0.0.0" ]
 	then	BREAKING_CHANGE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "BREAKING"| grep  -Eo '[a-fA-F0-9]{5,40}' `
@@ -153,10 +156,10 @@ if [ ! -z "$BREAKING_CHANGE_COMMIT_HASHES" ]
 		done
 fi
 
-if [ "$DRY_RUN" != "true" ]
-	then	cat /dev/null > $CHANGELOG_FILE
-		echo "Release v$NEW_VERSION" >> $CHANGELOG_FILE
-fi
+#if [ "$DRY_RUN" != "true" ]
+#	then	cat /dev/null > $CHANGELOG_FILE
+#		echo "Release v$NEW_VERSION" >> $CHANGELOG_FILE
+#fi
 test `echo $BREAKING_CHANGE_COMMIT_HASHES | wc -w` != 0 && parse_commit "Breaking_change" "$BREAKING_CHANGE_COMMIT_HASHES"
 test `echo $FEATURE_COMMIT_HASHES | wc -w` != 0 && parse_commit "Feature" "$FEATURE_COMMIT_HASHES"
 test `echo $FIX_COMMIT_HASHES | wc -w` != 0 && parse_commit "Fix" "$FIX_COMMIT_HASHES"
@@ -168,18 +171,42 @@ test `echo $TEST_COMMIT_HASHES | wc -w` != 0 && parse_commit "Test" "$TEST_COMMI
 test `echo $CHORE_COMMIT_HASHES | wc -w` != 0 && parse_commit  "Chore" "$CHORE_COMMIT_HASHES"
 test `echo $OTHER_COMMIT_HASHES | wc -w` != 0 && parse_commit "Other" "$CHORE_COMMIT_HASHES"
 
-if [ "$DRY_RUN" != "true" ]
-	then	echo -e "Chagelog file $CHANGELOG_FILE has been created/recreated with the following content"
-		cat $CHANGELOG_FILE
-fi
+
+BREAKING_CHANGE_COMMIT_HASHES_COUNT=`echo $BREAKING_CHANGE_COMMIT_HASHES | wc -w`
+FEATURE_COMMIT_HASHES_COUNT=`echo $FEATURE_COMMIT_HASHES | wc -w`
+FIX_COMMIT_HASHES_COUNT=`echo $FIX_COMMIT_HASHES | wc -w`
+DOCS_COMMIT_HASHES_COUNT=`echo $DOCS_COMMIT_HASHES | wc -w`
+STYLE_COMMIT_HASHES_COUNT=`echo $STYLE_COMMIT_HASHES | wc -w`
+REFACTOR_COMMIT_HASHES_COUNT=`echo $REFACTOR_COMMIT_HASHES | wc -w`
+PERF_COMMIT_HASHES_COUNT=`echo $PERF_COMMIT_HASHES | wc -w`
+TEST_COMMIT_HASHES_COUNT=`echo $TEST_COMMIT_HASHES | wc -w`
+CHORE_COMMIT_HASHES_COUNT=`echo $CHORE_COMMIT_HASHES | wc -w`
+OTHER_COMMIT_HASHES_COUNT=`echo $OTHER_COMMIT_HASHES | wc -w`
+
+#if [ "$DRY_RUN" != "true" ]
+#	then	echo -e "Chagelog file $CHANGELOG_FILE has been created/recreated with the following content"
+#		cat $CHANGELOG_FILE
+#fi
 }
 
-function push_change_log () {
-git add $CHANGELOG_FILE && git commit -m "Release v$NEW_VERSION $CHANGELOG_FILE" && git push origin master
-}
+#function push_change_log () {
+#git add $CHANGELOG_FILE && git commit -m "Release v$NEW_VERSION $CHANGELOG_FILE" && git push origin master
+#}
 
 function push_tag () {
-git tag -a v"$NEW_VERSION" -m "Release $NEW_VERSION"
+git tag -a v"$NEW_VERSION" -m "
+Release $NEW_VERSION
+`test $BREAKING_CHANGE_COMMIT_HASHES_COUNT != 0 && parse_commit "Breaking_change" "$BREAKING_CHANGE_COMMIT_HASHES"`
+`test $FEATURE_COMMIT_HASHES_COUNT != 0 && parse_commit "Feature" "$FEATURE_COMMIT_HASHES"`
+`test $FIX_COMMIT_HASHES_COUNT != 0 && parse_commit "Fix" "$FIX_COMMIT_HASHES"`
+`test $DOCS_COMMIT_HASHES_COUNT != 0 && parse_commit "Doc" "$DOCS_COMMIT_HASHES"`
+`test $STYLE_COMMIT_HASHES_COUNT != 0 && parse_commit "Style" "$STYLE_COMMIT_HASHES"`
+`test $REFACTOR_COMMIT_HASHES_COUNT != 0 && parse_commit "Refactor" "$REFACTOR_COMMIT_HASHES"`
+`test $PERF_COMMIT_HASHES_COUNT != 0 && parse_commit "Perf" "$PERF_COMMIT_HASHES"`
+`test $TEST_COMMIT_HASHES_COUNT != 0 && parse_commit "Test" "$TEST_COMMIT_HASHES"`
+`test $CHORE_COMMIT_HASHES_COUNT != 0 && parse_commit  "Chore" "$CHORE_COMMIT_HASHES"`
+`test $OTHER_COMMIT_HASHES_COUNT != 0 && parse_commit "Other" "$CHORE_COMMIT_HASHES"`
+"
 git push origin v"$NEW_VERSION"
 }
 
@@ -191,28 +218,41 @@ analyze_change_log
 }
 
 function dry_run () {
-DRY_RUN="true"
+#DRY_RUN="true"
 skal_run
 }
 
 function full_run () {
 skal_run
-push_change_log
+#push_change_log
 push_tag
 }
 
-if [ $1 == "--help" ] || [ $1 == "-h" ]
-	then semversh_help && exit 0
-elif [ $# != 0 ]
-	then	if echo $@ | grep -q "\-b"
-			then	GIT_BRANCH=`echo $@| grep -o "\-b\ [a-zA-Z0-9]\{1,\}"| cut -d " " -f2`
-			else	GIT_BRANCH="master"
-		fi
 
-		if echo $@ | grep -q "\-\-dry\-run"
-			then	dry_run
-			else	full_run
+
+if [  $# != 0 ]
+	then 	if [ $1 == "--help" ] || [ $1 == "-h" ]
+			then	semversh_help && exit 0
+		elif echo $@ | grep -q "\-b"
+			then    GIT_BRANCH=`echo $@| grep -o "\-b\ [a-zA-Z0-9]\{1,\}"| cut -d " " -f2`
+		elif echo $@ | grep -q "\-\-dry\-run"
+			then    dry_run
 		fi
 	else	GIT_BRANCH="master"
 		full_run
 fi
+#if [ $# != 0 ]
+#	then	if [ $1 == "--help" ]
+#			then semversh_help && exit 0
+#		fi	
+#		if echo $@ | grep -q "\-b"
+#			then	GIT_BRANCH=`echo $@| grep -o "\-b\ [a-zA-Z0-9]\{1,\}"| cut -d " " -f2`
+#			else	GIT_BRANCH="master"
+#		if	
+#		if echo $@ | grep -q "\-\-dry\-run"
+#			then	dry_run
+#			else	full_run
+#		fi
+#	else	GIT_BRANCH="master"
+#		full_run
+#fi

@@ -1,10 +1,9 @@
 #!/bin/bash
-#Version: 0.0.2
+#Version: 0.0.3
 
 MAJOR_VERSION_PATTERN="BREAKING CHANGE"
 MINOR_VERSION_PATTERN="feat:"
 PATCH_VERSION_PATTERN="fix: docs: style: refactor: perf: test: chore:"
-#CHANGELOG_FILE="CHANGELOG.MD"
 
 function semversh_help () {
 echo -e "
@@ -100,19 +99,11 @@ fi
 }
 
 function parse_commit () {
-#if [ "$DRY_RUN" == "true" ]
-#	then	
 		echo -e "\n$1(s) is/are:"
 		for commit_hash in `echo $@| sed "s/$1//"`
 		do
         		git show --quiet --pretty=format:%n%s%nAuthor\:\ %an\ \(%ae\)%nDate\:\ %ai%n%b%nURL\:\ https://$GIT_REMOTE_WEB_URL/commit/%h%n%n $commit_hash
 		done
-#	else	echo -e "\n$1(s) is/are:" >> $CHANGELOG_FILE
-#		for commit_hash in `echo $@| sed "s/$1//"`
-#		do
-#        		git show --quiet --pretty=format:%n%s%nAuthor\:\ %an\ \(%ae\)%nDate\:\ %ai%n%b%nURL\:\ https://$GIT_REMOTE_WEB_URL/commit/%h%n%n $commit_hash >> $CHANGELOG_FILE
-#		done
-#fi
 }
 
 function analyze_change_log () {
@@ -156,10 +147,6 @@ if [ ! -z "$BREAKING_CHANGE_COMMIT_HASHES" ]
 		done
 fi
 
-#if [ "$DRY_RUN" != "true" ]
-#	then	cat /dev/null > $CHANGELOG_FILE
-#		echo "Release v$NEW_VERSION" >> $CHANGELOG_FILE
-#fi
 test `echo $BREAKING_CHANGE_COMMIT_HASHES | wc -w` != 0 && parse_commit "Breaking_change" "$BREAKING_CHANGE_COMMIT_HASHES"
 test `echo $FEATURE_COMMIT_HASHES | wc -w` != 0 && parse_commit "Feature" "$FEATURE_COMMIT_HASHES"
 test `echo $FIX_COMMIT_HASHES | wc -w` != 0 && parse_commit "Fix" "$FIX_COMMIT_HASHES"
@@ -182,16 +169,7 @@ PERF_COMMIT_HASHES_COUNT=`echo $PERF_COMMIT_HASHES | wc -w`
 TEST_COMMIT_HASHES_COUNT=`echo $TEST_COMMIT_HASHES | wc -w`
 CHORE_COMMIT_HASHES_COUNT=`echo $CHORE_COMMIT_HASHES | wc -w`
 OTHER_COMMIT_HASHES_COUNT=`echo $OTHER_COMMIT_HASHES | wc -w`
-
-#if [ "$DRY_RUN" != "true" ]
-#	then	echo -e "Chagelog file $CHANGELOG_FILE has been created/recreated with the following content"
-#		cat $CHANGELOG_FILE
-#fi
 }
-
-#function push_change_log () {
-#git add $CHANGELOG_FILE && git commit -m "Release v$NEW_VERSION $CHANGELOG_FILE" && git push origin master
-#}
 
 function push_tag () {
 git tag -a v"$NEW_VERSION" -m "
@@ -218,13 +196,11 @@ analyze_change_log
 }
 
 function dry_run () {
-#DRY_RUN="true"
 skal_run
 }
 
 function full_run () {
 skal_run
-#push_change_log
 push_tag
 }
 
@@ -241,18 +217,3 @@ if [  $# != 0 ]
 	else	GIT_BRANCH="master"
 		full_run
 fi
-#if [ $# != 0 ]
-#	then	if [ $1 == "--help" ]
-#			then semversh_help && exit 0
-#		fi	
-#		if echo $@ | grep -q "\-b"
-#			then	GIT_BRANCH=`echo $@| grep -o "\-b\ [a-zA-Z0-9]\{1,\}"| cut -d " " -f2`
-#			else	GIT_BRANCH="master"
-#		if	
-#		if echo $@ | grep -q "\-\-dry\-run"
-#			then	dry_run
-#			else	full_run
-#		fi
-#	else	GIT_BRANCH="master"
-#		full_run
-#fi

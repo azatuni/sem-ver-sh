@@ -1,5 +1,5 @@
 #!/bin/bash
-#Version: 0.0.3
+#Version: 0.0.4
 
 MAJOR_VERSION_PATTERN="BREAKING CHANGE"
 MINOR_VERSION_PATTERN="feat:"
@@ -111,26 +111,26 @@ GIT_ROOT_DIR=`git rev-parse --show-toplevel`
 GIT_REMOTE_WEB_URL=`git config --get remote.origin.url| sed 's/.*@//;s/\.git//;s/\:/\//'`
 test `pwd` != "$GIT_ROOT_DIR" && cd "$GIT_ROOT_DIR"
 if [ "$LATEST_VERSION" == "0.0.0" ]
-	then	BREAKING_CHANGE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "BREAKING"| grep  -Eo '[a-fA-F0-9]{5,40}' `
-		FEATURE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^feat"| grep  -Eo '[a-fA-F0-9]{5,40}' `
-		FIX_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^fix"| grep  -Eo '[a-fA-F0-9]{5,40}' `
-		DOCS_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^docs"| grep  -Eo '[a-fA-F0-9]{5,40}' `
-		STYLE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^style"| grep  -Eo '[a-fA-F0-9]{5,40}' `
-		REFACTOR_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^refactor"| grep  -Eo '[a-fA-F0-9]{5,40}' `
-		PERF_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^perf"| grep  -Eo '[a-fA-F0-9]{5,40}' `
-		TEST_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^test"| grep  -Eo '[a-fA-F0-9]{5,40}' `
-		CHORE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^chore"| grep  -Eo '[a-fA-F0-9]{5,40}' `
-		OTHER_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -iv 'BREAKING\|^feat\|^fix\|^docs\|^style\|^refactor\|^perf\|^test\|^chore'|grep  -Eo '[a-fA-F0-9]{5,40}' `
-	else	BREAKING_CHANGE_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "BREAKING"| grep  -Eo '[a-fA-F0-9]{5,40}'`
-		FEATURE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^feat"| grep  -Eo '[a-fA-F0-9]{5,40}' `
-                FIX_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^fix"| grep  -Eo '[a-fA-F0-9]{5,40}' `
-                DOCS_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^docs"| grep  -Eo '[a-fA-F0-9]{5,40}' `
-                STYLE_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^style"| grep  -Eo '[a-fA-F0-9]{5,40}' `
-                REFACTOR_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^refactor"| grep  -Eo '[a-fA-F0-9]{5,40}' `
-                PERF_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^perf"| grep  -Eo '[a-fA-F0-9]{5,40}' `
-                TEST_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^test"| grep  -Eo '[a-fA-F0-9]{5,40}' `
-                CHORE_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^chore"| grep  -Eo '[a-fA-F0-9]{5,40}' `
-		OTHER_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -iv 'BREAKING\|^feat\|^fix\|^docs\|^style\|^refactor\|^perf\|^test\|^chore'|grep  -Eo '[a-fA-F0-9]{5,40}' `
+	then	BREAKING_CHANGE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "BREAKING"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+		FEATURE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^feat"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+		FIX_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^fix"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+		DOCS_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^docs"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+		STYLE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^style"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+		REFACTOR_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^refactor"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+		PERF_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^perf"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+		TEST_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^test"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+		CHORE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^chore"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+		OTHER_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -iv 'BREAKING\|^feat\|^fix\|^docs\|^style\|^refactor\|^perf\|^test\|^chore'|grep  -Eo '[a-fA-F0-9]{5,40}$' `
+	else	BREAKING_CHANGE_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "BREAKING"| grep  -Eo '[a-fA-F0-9]{5,40}$'`
+		FEATURE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^feat"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+                FIX_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^fix"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+                DOCS_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^docs"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+                STYLE_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^style"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+                REFACTOR_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^refactor"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+                PERF_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^perf"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+                TEST_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^test"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+                CHORE_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^chore"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+		OTHER_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -iv 'BREAKING\|^feat\|^fix\|^docs\|^style\|^refactor\|^perf\|^test\|^chore'|grep  -Eo '[a-fA-F0-9]{5,40}$' `
 fi
 
 if [ ! -z "$BREAKING_CHANGE_COMMIT_HASHES" ]

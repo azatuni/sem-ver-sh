@@ -1,5 +1,5 @@
 #!/bin/bash
-#Version: 0.0.6
+#Version: 0.0.7
 #Author: https://github.com/azatuni/sem-ver-sh
 
 MAJOR_VERSION_PATTERN="BREAKING CHANGE"
@@ -13,7 +13,7 @@ Usage: $0
 \t[ -b BRANCH_NAME ]\t\tanalyze commit log from specific git branch. It is not recommendated to use this parameter. Default branch: master
 \t[ -f VERSION_FILE ]\t\tdefine file with package version in which new tag will be set near version line
 \t[ --changelog CHANGELOG_FILE ]\twill write change log exept git tag also in file. If CHANGELOG_FILE is not defiend CHANGELOG.md will be used
-\t--dry-run\t\t\trun script in the dry run mode
+\t--dry-run\t\t\trun script in the dry run mode (no any updates pushed)
 "
 }
 
@@ -200,59 +200,44 @@ fi
 }
 
 function update_version_file () {
-#OLD_VERSION_FROM_VERSION_FILE=`grep version $VERSION_FILE | grep -Eo "[0-9]{1,}.[0-9]{1,}.[0-9]{1,}"`
 VERSION_LINE_NUMBER=`cat -n $VERSION_FILE | grep version| awk '{print $1}'`
-#test -z $OLD_VERSION_FROM_VERSION_FILE && echo -e "Error! No old version was set in $VERSION_FILE, if it is a first release just set version to 0.0.0" && exit 6
-sed -i "$VERSION_LINE_NUMBERs/$OLD_VERSION_FROM_VERSION_FILE/$NEW_VERSION/" "$VERSION_FILE" 
+sed -i "${VERSION_LINE_NUMBER}s/"$OLD_VERSION_FROM_VERSION_FILE"/"$NEW_VERSION"/" "$VERSION_FILE" 
 if [ $? == 0 ]
         then    echo -e "Changed version from $OLD_VERSION_FROM_VERSION_FILE to $NEW_VERSION in $VERSION_FILE"
         else    echo -e "Error! Failed to change version from $OLD_VERSION_FROM_VERSION_FILE to $NEW_VERSION in $VERSION_FILE" && exit 7
 fi
 }
 
-#function get_old_version_from_version_file () {
-#OLD_VERSION_FROM_VERSION_FILE=`grep version $VERSION_FILE | grep -Eo "[0-9]{1,}.[0-9]{1,}.[0-9]{1,}"`
-#VERSION_LINE_NUMBER=`cat -n $VERSION_FILE | grep version| awk '{print $1}'`
-#test -z $OLD_VERSION_FROM_VERSION_FILE && echo -e "Error! No old version was set in $VERSION_FILE, if it is a first release just set version to 0.0.0" && exit 6
-#echo "Old version in $VERSION_FILE is $OLD_VERSION"
-#}
 
-#function write_new_version_into_version_file () {
-#sed -i "$VERSION_LINE_NUMBERs/$OLD_VERSION_FROM_VERSION_FILE/$NEW_VERSION/" "$VERSION_FILE" 
-#if [ $? == 0 ]
-#	then	echo -e "Chanched version from $OLD_VERSION_FROM_VERSION_FILE to $NEW_VERSION in $VERSION_FILE"
-#	else	echo -e "Error! Failed to change version from $OLD_VERSION_FROM_VERSION_FILE to $NEW_VERSION in $VERSION_FILE" && exit 7
-#fi
-#}
 
 function commit_and_push_new_version_file () {
 git add "$VERSION_FILE" && git commit -m "version set from $OLD_VERSION_FROM_VERSION_FILE to $NEW_VERSION in $VERSION_FILE" && git push origin $GIT_BRANCH
 }
 
-function skal_run () {
-check_git_health
-get_last_sem_ver
-set_latest_sem_ver
-analyze_change_log
+function git_add_file () {
+git status | grep -q "$1" && git add "$1"
 }
 
-function dry_run () {
-skal_run
-}
-
-function full_run () {
-skal_run
-push_tag
+function try_git_commit_push () {
+GIT_STAGE_FILES=`git diff --name-only --cached`
+test ! -z "$GIT_STAGE_FILES" && git commit -m "Modify $GIT_STAGE_FILE" && git push origin "$GIT_BRANCH"
 }
 
 function main_run () {
 if [ "$DRY_RUN_MODE" == "yes" ]
-	then	skal_run
-		test ! -z $CHANGELOG_FILE && generate_changelog_file
-		test ! -z $VERSION_FILE && update_version_file
+	then	check_git_health
+		get_last_sem_ver
+		set_latest_sem_ver
+		analyze_change_log
 elif [ "$DRY_RUN_MODE" == "no" ]
-	then	skal_run
-		test ! -z $CHANGELOG_FILE && generate_changelog_file
+	then	check_git_health
+		get_last_sem_ver
+		set_latest_sem_ver
+		analyze_change_log
+		test ! -z "$CHANGELOG_FILE" && generate_changelog_file && git_add_file "$CHANGELOG_FILE"
+		test ! -z "$VERSION_FILE" && update_version_file && git_add_file "$VERSION_FILE"
+		try_git_commit_push
+		push_tag
 else	echo -e "Error!" && exit 1
 fi
 }
@@ -271,7 +256,7 @@ if [  $# != 0 ]
 				test -z $VERSION_FILE && echo -e "Error! No version file specified after -f option" && exit 5
 				test ! -f $VERSION_FILE && echo -e "Error! $VERSION_FILE doesn't exists" && exit 6
 				OLD_VERSION_FROM_VERSION_FILE=`grep version $VERSION_FILE | grep -Eo "[0-9]{1,}.[0-9]{1,}.[0-9]{1,}"`
-				test -z $OLD_VERSION_FROM_VERSION_FILE && echo -e "Error! No version or old version was set in $VERSION_FILE, if it is a first release just set version to 0.0.0" && exit 6
+				test -z $OLD_VERSION_FROM_VERSION_FILE && echo -e "Error! No 'version' string was found  or old version was set in $VERSION_FILE! If it is a first release just set version to 0.0.0" && exit 6
 		fi
 		if echo $@ | grep -q '\-\-changelog'
 			then	CHANGELOG_FILE=`echo $@ | grep -o '\-\-changelog\ [a-zA-Z0-9_-.]\{3,\}'| cut -d " " -f2`
@@ -283,23 +268,6 @@ if [  $# != 0 ]
 		fi
 fi
 }
-
-#if [  $# != 0 ]
-#	then 	if [ $1 == "--help" ] || [ $1 == "-h" ]
-#			then	semversh_help && exit 0
-#		elif echo $@ | grep -q "\-b"
-#			then    GIT_BRANCH=`echo $@| grep -o "\-b\ [a-zA-Z0-9]\{1,\}"| cut -d " " -f2`
-#		elif echo $@ | grep -q "\-\-dry\-run"
-#			then    dry_run
-#		elif echo $@ | grep -q '\-f'
-#			then	VERSION_FILE=`echo $@| grep -o '\-f\ [a-zA-Z0-9_-.]\{1,\}'| awk '{print $2}'`
-#				test -z $VERSION_FILE && echo -e "Error! No version file specified after -f option" && exit 5
-#				test ! -f $VERSION_FILE && echo -e "Error! $VERSION_FILE doesn't exists" && exit 6
-#				get_old_version_from_version_file
-#		fi
-#	else	GIT_BRANCH="master"
-#		full_run
-#fi
 
 pasparam_parser $@
 main_run

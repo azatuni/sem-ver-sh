@@ -1,8 +1,11 @@
 # sem-ver-sh
-## About sem-ver.sh
-sem-ver.sh is a software release automation bash script which using [Semantic Verioning (SemVer)](https://semver.org/) software versioning schemes. It's analize git's commites titles after last pushed tag and manage new tag|release version. After successful release can push new version as a tag to remote origin with all commits messages as a release note inside tag's body.
+## About semver.sh
+semver.sh is a software release automation bash script which using [Semantic Versioning (SemVer)](https://semver.org/) software versioning schemes. It's analize git's commites titles after last pushed tag (if any exists) and manage new tag|release version. After successful release can push new version as a tag to remote origin with all commits messages as a release note(changelog) inside tag's body.
+Can create separate changeleg file (default: CHANGELOG.md) if sem-ver.sh run with --changelog key.
+Can update package version in package file (package.json etc) if specified via -f PACKAGE_FILE option and argument.
 ## Git commit title patterns
-For using semver.sh all commit's should starts with the following patterns:
+semver.sh using [commitizen](https://github.com/commitizen) style commit titles patterns for defining new SemVer
+All commit's titles should starts with the following patterns:
 - **Major** Version commit title pattern:
   - *BREAKING CHANGE:*
 - **Minor** Version commit title pattern:
@@ -15,6 +18,7 @@ For using semver.sh all commit's should starts with the following patterns:
   - *perf:*
   - *test:*
   - *chore:*
+Commits with other titles have no any affect in Semantic Versioning and just will be added in "Other" section of release note(changelog).
 ## Options
 For script usage run:
 ```

@@ -1,5 +1,5 @@
 #!/bin/bash
-#Version: 0.0.7
+#Version: 0.0.8
 #Author: https://github.com/azatuni/sem-ver-sh
 
 MAJOR_VERSION_PATTERN="BREAKING CHANGE"
@@ -7,6 +7,7 @@ MINOR_VERSION_PATTERN="feat:"
 PATCH_VERSION_PATTERN="fix: docs: style: refactor: perf: test: chore:"
 
 function semversh_help () {
+#help dzmrtel u normal gunazardel errorner u messagner
 echo -e "
 Usage: $0
 \t-h|--help\t\t\tshow this help and exit from script
@@ -136,7 +137,7 @@ if [ "$LATEST_VERSION" == "0.0.0" ]
                 CHORE_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^chore"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
 		OTHER_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -iv 'BREAKING\|^feat\|^fix\|^docs\|^style\|^refactor\|^perf\|^test\|^chore'|grep  -Eo '[a-fA-F0-9]{5,40}$' `
 fi
-
+#Haskanal es inch a???
 if [ ! -z "$BREAKING_CHANGE_COMMIT_HASHES" ]
 	then	for commit_hash in $BREAKING_CHANGE_COMMIT_HASHES
 		do	FEATURE_COMMIT_HASHES=`echo $FEATURE_COMMIT_HASHES | sed "s/$commit_hash//"`
@@ -234,6 +235,7 @@ elif [ "$DRY_RUN_MODE" == "no" ]
 		get_last_sem_ver
 		set_latest_sem_ver
 		analyze_change_log
+#tester ira funkciai mej mtcnel vor mihat try_funkciai anun darna
 		test ! -z "$CHANGELOG_FILE" && generate_changelog_file && git_add_file "$CHANGELOG_FILE"
 		test ! -z "$VERSION_FILE" && update_version_file && git_add_file "$VERSION_FILE"
 		try_git_commit_push
@@ -247,11 +249,10 @@ function pasparam_parser () {
 if [  $# != 0 ]
         then    
 		test $1 == '--help' || test $1 == '-h' && semversh_help && exit 0	
-		if echo $@ | grep -q '\-b'
-                        then    GIT_BRANCH=`echo $@| grep -o "\-b\ [a-zA-Z0-9]\{1,\}"| cut -d " " -f2`
-			else	GIT_BRANCH="master"
-		fi
+		echo $@ | grep -q '\-b' && GIT_BRANCH=`echo $@| grep -o "\-b\ [a-zA-Z0-9]\{1,\}"| cut -d " " -f2`
+		echo $@ | grep -q '\-\-dry\-run' && DRY_RUN_MODE="yes" 
 		if echo $@ | grep -q '\-f'
+#es version file manipulyacianner arandzin funkciai mej mtcnel
                         then    VERSION_FILE=`echo $@| grep -o '\-f\ [a-zA-Z0-9_-.]\{1,\}'| cut -d " " -f2`
 				test -z $VERSION_FILE && echo -e "Error! No version file specified after -f option" && exit 5
 				test ! -f $VERSION_FILE && echo -e "Error! $VERSION_FILE doesn't exists" && exit 6
@@ -262,11 +263,9 @@ if [  $# != 0 ]
 			then	CHANGELOG_FILE=`echo $@ | grep -o '\-\-changelog\ [a-zA-Z0-9_-.]\{3,\}'| cut -d " " -f2`
 				test -z $CHANGELOG_FILE && CHANGELOG_FILE="CHANGELOG.md"
 		fi
-		if echo $@ | grep -q '\-\-dry\-run'
-			then	DRY_RUN_MODE="yes"
-			else	DRY_RUN_MODE="no"
-		fi
 fi
+test -z "$GIT_BRANCH" && GIT_BRANCH="master"
+test -z "$DRY_RUN_MODE" && DRY_RUN_MODE="no"
 }
 
 pasparam_parser $@

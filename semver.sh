@@ -1,5 +1,5 @@
 #!/bin/bash
-#Version: 0.0.8
+#Version: 0.0.9
 #Author: https://github.com/azatuni/sem-ver-sh
 
 
@@ -207,7 +207,7 @@ git push origin v"$NEW_VERSION"
 }
 
 function generate_changelog_file () {
-echo -e "Release $NEW_VERSION" > $CHANGELOG_FILE && analyze_change_log >> $CHANGELOG_FILE
+echo -e "\nRelease $NEW_VERSION" >> $CHANGELOG_FILE && analyze_change_log >> $CHANGELOG_FILE
 if [ $? == 0 ]
 	then	echo "Generated changelog in $CHANGELOG_FILE file\t${OK_STATUS}"
 fi

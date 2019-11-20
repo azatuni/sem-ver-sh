@@ -214,7 +214,7 @@ fi
 }
 
 function update_version_file () {
-VERSION_LINE_NUMBER=`cat -n $VERSION_FILE | grep version| awk '{print $1}'`
+VERSION_LINE_NUMBER=`cat -n $VERSION_FILE | grep -m1 version| awk '{print $1}'`
 sed -i "${VERSION_LINE_NUMBER}s/"$OLD_VERSION_FROM_VERSION_FILE"/"$NEW_VERSION"/" "$VERSION_FILE" 
 if [ $? == 0 ]
         then    echo -e "Changed version from $OLD_VERSION_FROM_VERSION_FILE to $NEW_VERSION in $VERSION_FILE\t${OK_STATUS}"

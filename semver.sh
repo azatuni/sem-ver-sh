@@ -271,7 +271,7 @@ if [  $# != 0 ]
 		test $1 == '--help' || test $1 == '-h' && semversh_help && exit 0	
 		echo $@ | grep -q '\-b' && GIT_BRANCH=`echo $@| grep -o "\-b\ [a-zA-Z0-9]\{1,\}"| cut -d " " -f2`
 		echo $@ | grep -q '\-\-dry\-run' && DRY_RUN_MODE="yes" 
-		echo $@ | grep -q '\-f' && VERSION_FILE=`echo $@| grep -o '\-f\ [a-zA-Z0-9_-.]\{1,\}'| cut -d " " -f2` && check_version_file
+		echo $@ | grep -q '\-f' && VERSION_FILE=`echo $@| grep -o '\-f\ [a-zA-Z0-9_.-]\{1,\}'| cut -d " " -f2` && check_version_file
 		if echo $@ | grep -q '\-\-changelog'
 			then	CHANGELOG_FILE=`echo $@ | grep -o '\-\-changelog\ [a-zA-Z0-9_-.]\{3,\}'| cut -d " " -f2`
 				test -z $CHANGELOG_FILE && CHANGELOG_FILE="CHANGELOG.md"

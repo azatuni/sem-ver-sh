@@ -94,7 +94,7 @@ case $1 in
 		NEW_VERSION="$CURRENT_MAJOR_VERSION.$CURRENT_MINOR_VERSION.$CURRENT_PATCH_VERSION"
 	;;
 esac
-echo -e "New version set to ${GREEN} $NEW_VERSION ${NORMAL}"
+echo -e "New version set to $NEW_VERSION"
 }
 
 function check_git_health () {

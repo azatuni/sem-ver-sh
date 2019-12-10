@@ -3,7 +3,7 @@
 semver.sh is a software release automation bash script which using [Semantic Versioning (SemVer)](https://semver.org/) software versioning schemes. 
 It's analize [commitizen](https://github.com/commitizen) style git's commites messages and manage new tag|release version. 
 As default behaviour semver.sh push new version as a tag to remote origin with all commit's messages as a release note(changelog) inside tag's body, so it can be used at the end of any CI/CD pipeline for versioning successful release.
-Can manage separate changelog file and update package version in package version file (package.json etc). See *Options* section.
+Can manage separate changelog file and update package version in package version file, for example package.json etc. For detailed description see *Usage* section.
 ## Git commit messages patterns
 For defining new SemVer semver.sh is using commit messages patterns. 
 

@@ -14,7 +14,7 @@ For defining new SemVer semver.sh is using commit messages patterns.
 > Should be always capitalize. Major version pattern always should be put in commit message title or in message body.
 
 - **Minor** Version commit title pattern:
-  - *feat:*
+  - *feat:* or *feat(some text|scope here):*
 - **Patch** Version commit title patterns: 
   - *fix:* or *fix(some text|scope here):*
   - *docs:* or *docs(some text|scope here):*
@@ -24,7 +24,7 @@ For defining new SemVer semver.sh is using commit messages patterns.
   - *test:* or *test(some text|scope here):*
   - *chore:* or *chore(some text|scope here):*
 
-> Pattern for minor and patch version could starts with capitale letter or be fully capitalize. They can also include scope as described above.  Always should be put at the begining of the commit's title.
+> Pattern for minor and patch version could starts with capitale letter or be fully capitalize. They can also include scope as described above.  Always should be put at the begining of the commit's title and have colon at it's end as shown above.
 
 Commits with other patterns wouldn't affect on Semantic Versioning and just will be added in "Other" section of release note(changelog, tag's body).
 ## Usage

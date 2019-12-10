@@ -4,12 +4,11 @@ semver.sh is a software release automation bash script which using [Semantic Ver
 Can create separate changeleg file (default: CHANGELOG.md) if sem-ver.sh run with --changelog key.
 Can update package version in package version file (package.json etc) if specified via '-f' key followed with 'VERSION_FILE' argument.
 ## Git commit title patterns
-semver.sh using [commitizen](https://github.com/commitizen) style commit titles patterns for defining new SemVer. 
-Pattern word (BREAKING CHANGE) for major version should be always capitalize. Major version pattern also could be put in commit body.
-Pattern word for minor and patch version could starts with capitale letter or be fully capitalize. They should put at the begining of the commit title.
+For defining new SemVer semver.sh is using [commitizen](https://github.com/commitizen) style commit titles patterns. 
 Patterns are:
-- **Major** Version commit title pattern:
+- **Major** Version commit pattern:
   - *BREAKING CHANGE*
+Should be always capitalize. Major version pattern also could be put in commit body.
 - **Minor** Version commit title pattern:
   - *feat:*
 - **Patch** Version commit title patterns: 
@@ -20,8 +19,9 @@ Patterns are:
   - *perf:* or *perf(some text|scope here):*
   - *test:* or *test(some text|scope here):*
   - *chore:* or *chore(some text|scope here):*
+Pattern word for minor and patch version could starts with capitale letter or be fully capitalize. They should put at the begining of the commit title.
 
-Commits with other titles'll have no any affect in Semantic Versioning and just will be added in "Other" section of release note(changelog).
+Commits with other titles will have no any affect in Semantic Versioning and just will be added in "Other" section of release note(changelog).
 ## Options
 For script usage run:
 ```

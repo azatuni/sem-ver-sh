@@ -1,13 +1,23 @@
 #!/bin/bash
-#Version: 0.0.9
+#Version: 0.1.0
 #Author: https://github.com/azatuni/sem-ver-sh
 
 
 function set_variables () {
 #Git commit title patterns
 MAJOR_VERSION_PATTERN="BREAKING CHANGE"
-MINOR_VERSION_PATTERN="feat:"
-PATCH_VERSION_PATTERN="fix: docs: style: refactor: perf: test: chore:"
+MINOR_VERSION_PATTERN='feat:\|feat(.*):'
+PATCH_VERSION_PATTERN=('fix:\|fix(.*):' 'docs\|docs(.*):' 'style:\|style(.*):' 'refactor:\|refactor(.*):' 'perf:\|perf(.*):' 'test:\|test(.*):' 'chore:\|chore(.*):')
+#Patterns for every chaneg
+BREAKING_CHANGE_PATTERN="$MAJOR_VERSION_PATTERN"
+FEATURE_PATTERN="$MINOR_VERSION_PATTERN"
+FIX_PATTERN=${PATCH_VERSION_PATTERN[0]}
+DOCS_PATTERN=${PATCH_VERSION_PATTERN[1]}
+STYLE_PATTERN=${PATCH_VERSION_PATTERN[2]}
+REFACTOR_PATTERN=${PATCH_VERSION_PATTERN[3]}
+PERF_PATTERN=${PATCH_VERSION_PATTERN[4]}
+TEST_PATTERN=${PATCH_VERSION_PATTERN[5]}
+CHORE_PATTERN=${PATCH_VERSION_PATTERN[6]}
 #Get version
 SEMVERSH_VERSION=`head $0| grep Version| cut -d ' ' -f2`
 #Echo colours
@@ -36,43 +46,51 @@ echo -e "Usage: $0
 \t[ -b BRANCH_NAME ]\t\tanalyze commit log from specific git branch. It is not recommendated to use this parameter. Default branch: 'master'
 \t[ -f VERSION_FILE ]\t\tdefine file with package version in which new tag will be set as version in 'version' line
 \t[ --changelog CHANGELOG_FILE ]\twrite changelog also in file. If CHANGELOG_FILE is not defined 'CHANGELOG.md' will be used
-\t--dry-run\t\t\trun $0 in the dry run mode (no any updates pushed)
+\t--dry-run\t\t\trun $0 in the dry run mode (no any updates pushed|commited)
 "
 }
 
-function analyze_version () {
+function analyze_commit_hash () {
+git show $1 | grep -q "$BREAKING_CHANGE_PATTERN" && BREAKING_CHANGE_COMMIT_HASHES="$BREAKING_CHANGE_COMMIT_HASHES $1"
+git show --pretty=%s\ %H $1| grep -iq ^"$FEATURE_PATTERN" && FEATURE_COMMIT_HASHES="$FEATURE_COMMIT_HASHES $1"
+git show --pretty=%s\ %H $1| grep -iq ^"$FIX_PATTERN" && FIX_COMMIT_HASHES="$FIX_COMMIT_HASHES $1"
+git show --pretty=%s\ %H $1| grep -iq ^"$DOCS_PATTERN" && DOCS_COMMIT_HASHES="$DOCS_COMMIT_HASHES $1"
+git show --pretty=%s\ %H $1| grep -iq ^"$STYLE_PATTERN" && STYLE_COMMIT_HASHES="$STYLE_COMMIT_HASHES $1"
+git show --pretty=%s\ %H $1| grep -iq ^"$REFACTOR_PATTERN" && REFACTOR_COMMIT_HASHES="$REFACTOR_COMMIT_HASHES $1"
+git show --pretty=%s\ %H $1| grep -iq ^"$PERF_PATTERN" && PERF_COMMIT_HASHES="$PERF_COMMIT_HASHES $1"
+git show --pretty=%s\ %H $1| grep -iq ^"$TEST_PATTERN" && TEST_COMMIT_HASHES="$TEST_COMMIT_HASHES $1"
+git show --pretty=%s\ %H $1| grep -iq ^"$CHORE_PATTERN" && CHORE_COMMIT_HASHES="$CHORE_COMMIT_HASHES $1"
+}
+
+function get_commit_hashes () {
 if [ "$LATEST_VERSION" == "0.0.0" ]
-	then	case $1 in
-			major)
-				git log --pretty=%s\ %H | grep -qi "$MAJOR_VERSION_PATTERN" && increment_version major
-			;;
-			minor)
-				git log --pretty=%s\ %H | grep -qi "^$MINOR_VERSION_PATTERN" && increment_version minor
-			;;
-			patch)
-				for pattern in $PATCH_VERSION_PATTERN
-				do
-					git log --pretty=%s\ %H | grep -qi ^$pattern && increment_version patch && break
-				done
-			;;	
-		esac
-	else	COMMITS_COUNT_SINCE_LATEST_VERSION=`git log --pretty=%s\ %H | grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT|wc -l`
-		test $COMMITS_COUNT_SINCE_LATEST_VERSION == 0 && echo -e "Nothing is committed since latest version|release" && exit 3
-		case $1 in 
-			major)
-				git log --pretty=%s\ %H | grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -qi "$MAJOR_VERSION_PATTERN" && increment_version major
-			;;	
-			minor)
-				git log --pretty=%s\ %H | grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -qi ^$MINOR_VERSION_PATTERN && increment_version minor
-			;;
-			patch)
-				for pattern in $PATCH_VERSION_PATTERN
-				do
-					git log --pretty=%s\ %H | grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -qi ^$pattern && increment_version patch && break
-				done
-			;;
-		esac
+        then    ALL_COMMIT_HASHES=`git log --pretty=%H`
+	else	ALL_COMMIT_HASHES=`git log --pretty=%H| grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT`
+		#INTERUPT IF THERE ARE NO COMMITS SINCE LAST RELEASE
+		test -z "$ALL_COMMIT_HASHES" && echo -e "Nothing is committed since latest version|release" && exit 3
 fi
+#Analize commit hash
+for hash in $ALL_COMMIT_HASHES
+do
+	analyze_commit_hash $hash
+done
+}
+
+function analyze_version () {
+case $1 in
+	major)
+		test ! -z "$BREAKING_CHANGE_COMMIT_HASHES" && increment_version major
+		;;
+	minor)
+		test ! -z  "$FEATURE_COMMIT_HASHES"
+		;;
+	patch)
+		for hash in "$FIX_PATTERN" "$DOCS_PATTERN" "$STYLE_PATTERN" "$REFACTOR_PATTERN" "$PERF_PATTERN" "$TEST_PATTERN" "$CHORE_PATTERN"
+		do
+			test ! -z $hash && increment_version patch && break
+		done
+		;;
+esac
 }
 
 function increment_version () {
@@ -133,33 +151,30 @@ function parse_commit () {
 		done
 }
 
+function analyze_commit_hashes () {
+git show $1 | grep -q $MAJOR_VERSION_PATTERN && BREAKING_CHANGE_COMMIT_HASHES="$BREAKING_CHANGE_COMMIT_HASHES $1"
+FEATURE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^feat"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+FIX_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^fix"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+DOCS_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^docs"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+STYLE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^style"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+REFACTOR_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^refactor"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+PERF_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^perf"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+TEST_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^test"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+CHORE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^chore"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
+}
+
+
 function analyze_change_log () {
 GIT_ROOT_DIR=`git rev-parse --show-toplevel`
 GIT_REMOTE_WEB_URL=`git config --get remote.origin.url| sed 's/.*@//;s/\.git//;s/\:/\//'`
 test `pwd` != "$GIT_ROOT_DIR" && cd "$GIT_ROOT_DIR"
-if [ "$LATEST_VERSION" == "0.0.0" ]
-	then	BREAKING_CHANGE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "BREAKING"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
-		FEATURE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^feat"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
-		FIX_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^fix"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
-		DOCS_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^docs"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
-		STYLE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^style"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
-		REFACTOR_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^refactor"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
-		PERF_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^perf"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
-		TEST_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^test"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
-		CHORE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -i "^chore"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
-		OTHER_COMMIT_HASHES=`git log --pretty=%s\ %H | grep -iv 'BREAKING\|^feat\|^fix\|^docs\|^style\|^refactor\|^perf\|^test\|^chore'|grep  -Eo '[a-fA-F0-9]{5,40}$' `
-	else	BREAKING_CHANGE_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "BREAKING"| grep  -Eo '[a-fA-F0-9]{5,40}$'`
-		FEATURE_COMMIT_HASHES=`git log --pretty=%s\ %H | grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^feat"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
-                FIX_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^fix"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
-                DOCS_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^docs"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
-                STYLE_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^style"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
-                REFACTOR_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^refactor"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
-                PERF_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^perf"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
-                TEST_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^test"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
-                CHORE_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -i "^chore"| grep  -Eo '[a-fA-F0-9]{5,40}$' `
-		OTHER_COMMIT_HASHES=`git log --pretty=%s\ %H |grep $LATEST_VERSION_COMMIT -B1000 | grep -v $LATEST_VERSION_COMMIT | grep -iv 'BREAKING\|^feat\|^fix\|^docs\|^style\|^refactor\|^perf\|^test\|^chore'|grep  -Eo '[a-fA-F0-9]{5,40}$' `
-fi
-#Haskanal es inch a???
+#Filter other commit hashes
+OTHER_COMMIT_HASHES="$ALL_COMMIT_HASHES"
+for hash in $BREAKING_CHANGE_COMMIT_HASHES $FEATURE_COMMIT_HASHES $FIX_COMMIT_HASHES $DOCS_COMMIT_HASHES $STYLE_COMMIT_HASHES $REFACTOR_COMMIT_HASHES $PERF_COMMIT_HASHES $TEST_COMMIT_HASHES $CHORE_COMMIT_HASHES
+do
+	test ! -z "$OTHER_COMMIT_HASHES" && OTHER_COMMIT_HASHES=`echo "$OTHER_COMMIT_HASHES" | sed "s/$hash//"`
+done
+#Clean BREAKING_CHANEG commit hashes from other commit hashes
 if [ ! -z "$BREAKING_CHANGE_COMMIT_HASHES" ]
 	then	for commit_hash in $BREAKING_CHANGE_COMMIT_HASHES
 		do	FEATURE_COMMIT_HASHES=`echo $FEATURE_COMMIT_HASHES | sed "s/$commit_hash//"`
@@ -173,29 +188,17 @@ if [ ! -z "$BREAKING_CHANGE_COMMIT_HASHES" ]
 			OTHER_COMMIT_HASHES=`echo $OTHER_COMMIT_HASHES| sed "s/$commit_hash//"`
 		done
 fi
-
-test `echo $BREAKING_CHANGE_COMMIT_HASHES | wc -w` != 0 && parse_commit "Breaking_change" "$BREAKING_CHANGE_COMMIT_HASHES"
-test `echo $FEATURE_COMMIT_HASHES | wc -w` != 0 && parse_commit "Feature" "$FEATURE_COMMIT_HASHES"
-test `echo $FIX_COMMIT_HASHES | wc -w` != 0 && parse_commit "Fix" "$FIX_COMMIT_HASHES"
-test `echo $DOCS_COMMIT_HASHES | wc -w` != 0 && parse_commit "Doc" "$DOCS_COMMIT_HASHES"
-test `echo $STYLE_COMMIT_HASHES | wc -w` != 0 && parse_commit "Style" "$STYLE_COMMIT_HASHES"
-test `echo $REFACTOR_COMMIT_HASHES | wc -w` != 0 && parse_commit "Refactor" "$REFACTOR_COMMIT_HASHES"
-test `echo $PERF_COMMIT_HASHES | wc -w` != 0 && parse_commit "Perf" "$PERF_COMMIT_HASHES"
-test `echo $TEST_COMMIT_HASHES | wc -w` != 0 && parse_commit "Test" "$TEST_COMMIT_HASHES"
-test `echo $CHORE_COMMIT_HASHES | wc -w` != 0 && parse_commit  "Chore" "$CHORE_COMMIT_HASHES"
-test `echo $OTHER_COMMIT_HASHES | wc -w` != 0 && parse_commit "Other" "$OTHER_COMMIT_HASHES"
-
-
-BREAKING_CHANGE_COMMIT_HASHES_COUNT=`echo $BREAKING_CHANGE_COMMIT_HASHES | wc -w`
-FEATURE_COMMIT_HASHES_COUNT=`echo $FEATURE_COMMIT_HASHES | wc -w`
-FIX_COMMIT_HASHES_COUNT=`echo $FIX_COMMIT_HASHES | wc -w`
-DOCS_COMMIT_HASHES_COUNT=`echo $DOCS_COMMIT_HASHES | wc -w`
-STYLE_COMMIT_HASHES_COUNT=`echo $STYLE_COMMIT_HASHES | wc -w`
-REFACTOR_COMMIT_HASHES_COUNT=`echo $REFACTOR_COMMIT_HASHES | wc -w`
-PERF_COMMIT_HASHES_COUNT=`echo $PERF_COMMIT_HASHES | wc -w`
-TEST_COMMIT_HASHES_COUNT=`echo $TEST_COMMIT_HASHES | wc -w`
-CHORE_COMMIT_HASHES_COUNT=`echo $CHORE_COMMIT_HASHES | wc -w`
-OTHER_COMMIT_HASHES_COUNT=`echo $OTHER_COMMIT_HASHES | wc -w`
+#Pass existing hashes to parse_commit function
+test ! -z $BREAKING_CHANGE_COMMIT_HASHES && parse_commit "Breaking_change" "$BREAKING_CHANGE_COMMIT_HASHES"
+test ! -z $FEATURE_COMMIT_HASHES && parse_commit "Feature" "$FEATURE_COMMIT_HASHES"
+test ! -z $FIX_COMMIT_HASHES  && parse_commit "Fix" "$FIX_COMMIT_HASHES"
+test ! -z $DOCS_COMMIT_HASHES && parse_commit "Doc" "$DOCS_COMMIT_HASHES"
+test ! -z $STYLE_COMMIT_HASHES && parse_commit "Style" "$STYLE_COMMIT_HASHES"
+test ! -z $REFACTOR_COMMIT_HASHES && parse_commit "Refactor" "$REFACTOR_COMMIT_HASHES"
+test ! -z $PERF_COMMIT_HASHES && parse_commit "Perf" "$PERF_COMMIT_HASHES"
+test ! -z $TEST_COMMIT_HASHES && parse_commit  "Chore" "$CHORE_COMMIT_HASHES"
+test ! -z $CHORE_COMMIT_HASHES && parse_commit  "Chore" "$CHORE_COMMIT_HASHES"
+test ! -z $OTHER_COMMIT_HASHES && parse_commit "Other" "$OTHER_COMMIT_HASHES"
 }
 
 function push_tag () {
@@ -241,11 +244,13 @@ function main_run () {
 if [ "$DRY_RUN_MODE" == "yes" ]
 	then	check_git_health
 		get_last_sem_ver
+		get_commit_hashes
 		set_latest_sem_ver
 		analyze_change_log
 elif [ "$DRY_RUN_MODE" == "no" ]
 	then	check_git_health
 		get_last_sem_ver
+		get_commit_hashes
 		set_latest_sem_ver
 		analyze_change_log
 #tester ira funkciai mej mtcnel vor mihat try_funkciai anun darna

@@ -2,17 +2,17 @@
 ## About semver.sh
 semver.sh is a software release automation bash script which using [Semantic Versioning (SemVer)](https://semver.org/) software versioning schemes. 
 It's analize [commitizen](https://github.com/commitizen) style git's commites messages and manage new tag|release version. 
-Ad default behaviour semver.sh push new version as a tag to remote origin with all commit's messages as a release note(changelog) inside tags body, so it can be used in any CI/CD pipeline for versioning successful release.
-Can create separate changelog file (default: CHANGELOG.md) if sem-ver.sh run with '--changelog' key.
-Can update package version in package version file (package.json etc) if specified '-f' key followed with 'VERSION_FILE' package file name as an argument.
+As default behaviour semver.sh push new version as a tag to remote origin with all commit's messages as a release note(changelog) inside tag's body, so it can be used at the end of any CI/CD pipeline for versioning successful release.
+Can create, commit and push separate changelog file (default: CHANGELOG.md) if sem-ver.sh run with '*--changelog*' key. (see Usage section)
+Can update package version in package version file (package.json etc) if specified '*-f*' key followed with '*VERSION_FILE*' package file name as an argument.
 ## Git commit messages patterns
 For defining new SemVer semver.sh is using commit messages patterns. 
 
-Patterns are:
+***Patterns are:***
 - **Major** Version commit pattern:
   - *BREAKING CHANGE*
 
-Should be always capitalize. Major version pattern could be put in commit message title or body.
+> Should be always capitalize. Major version pattern could be put in commit message title or body.
 
 - **Minor** Version commit title pattern:
   - *feat:*
@@ -28,7 +28,12 @@ Should be always capitalize. Major version pattern could be put in commit messag
 Pattern for minor and patch version could starts with capitale letter or be fully capitalize. They can also include scope as descibed above.  Always should be put at the begining of the commit title.
 
 Commits with other patterns wouldn't affect on Semantic Versioning and just will be added in "Other" section of release note(changelog, tag's body).
-## Options
+## Usage
+Can be run in dry run mode to analyze and get new SemVer, but don't do anything.
+```
+sem-ver.sh --dry-run
+```
+
 For script usage run:
 ```
 sem-ver.sh --help

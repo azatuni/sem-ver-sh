@@ -189,16 +189,16 @@ if [ ! -z "$BREAKING_CHANGE_COMMIT_HASHES" ]
 		done
 fi
 #Pass existing hashes to parse_commit function
-test ! -z $BREAKING_CHANGE_COMMIT_HASHES && parse_commit "Breaking_change" "$BREAKING_CHANGE_COMMIT_HASHES"
-test ! -z $FEATURE_COMMIT_HASHES && parse_commit "Feature" "$FEATURE_COMMIT_HASHES"
-test ! -z $FIX_COMMIT_HASHES  && parse_commit "Fix" "$FIX_COMMIT_HASHES"
-test ! -z $DOCS_COMMIT_HASHES && parse_commit "Doc" "$DOCS_COMMIT_HASHES"
-test ! -z $STYLE_COMMIT_HASHES && parse_commit "Style" "$STYLE_COMMIT_HASHES"
-test ! -z $REFACTOR_COMMIT_HASHES && parse_commit "Refactor" "$REFACTOR_COMMIT_HASHES"
-test ! -z $PERF_COMMIT_HASHES && parse_commit "Perf" "$PERF_COMMIT_HASHES"
-test ! -z $TEST_COMMIT_HASHES && parse_commit  "Chore" "$CHORE_COMMIT_HASHES"
-test ! -z $CHORE_COMMIT_HASHES && parse_commit  "Chore" "$CHORE_COMMIT_HASHES"
-test ! -z $OTHER_COMMIT_HASHES && parse_commit "Other" "$OTHER_COMMIT_HASHES"
+test ! -z "$BREAKING_CHANGE_COMMIT_HASHES" && parse_commit "Breaking_change" "$BREAKING_CHANGE_COMMIT_HASHES"
+test ! -z "$FEATURE_COMMIT_HASHES" && parse_commit "Feature" "$FEATURE_COMMIT_HASHES"
+test ! -z "$FIX_COMMIT_HASHES" && parse_commit "Fix" "$FIX_COMMIT_HASHES"
+test ! -z "$DOCS_COMMIT_HASHES" && parse_commit "Doc" "$DOCS_COMMIT_HASHES"
+test ! -z "$STYLE_COMMIT_HASHES" && parse_commit "Style" "$STYLE_COMMIT_HASHES"
+test ! -z "$REFACTOR_COMMIT_HASHES" && parse_commit "Refactor" "$REFACTOR_COMMIT_HASHES"
+test ! -z "$PERF_COMMIT_HASHES" && parse_commit "Perf" "$PERF_COMMIT_HASHES"
+test ! -z "$TEST_COMMIT_HASHES" && parse_commit  "Chore" "$CHORE_COMMIT_HASHES"
+test ! -z "$CHORE_COMMIT_HASHES" && parse_commit  "Chore" "$CHORE_COMMIT_HASHES"
+test ! -z "$OTHER_COMMIT_HASHES" && parse_commit "Other" "$OTHER_COMMIT_HASHES"
 }
 
 function push_tag () {
@@ -263,10 +263,10 @@ fi
 }
 
 function check_version_file () {
-test -z $VERSION_FILE && echo -e "${RED}No version file specified after -f option\t${FATAL_ERROR}" && exit 5
-test ! -f $VERSION_FILE && echo -e "${RED}$VERSION_FILE file doesn't exists\t${FATAL_ERROR}" && exit 6
+test -z "$VERSION_FILE" && echo -e "${RED}No version file specified after -f option\t${FATAL_ERROR}" && exit 5
+test ! -f "$VERSION_FILE" && echo -e "${RED}$VERSION_FILE file doesn't exists\t${FATAL_ERROR}" && exit 6
 OLD_VERSION_FROM_VERSION_FILE=`grep version $VERSION_FILE | grep -Eo "[0-9]{1,}.[0-9]{1,}.[0-9]{1,}"`
-test -z $OLD_VERSION_FROM_VERSION_FILE && echo -e "${RED}No 'version' string was found  or old version was set in $VERSION_FILE." && echo -e "If it is a first release just set version to 0.0.0\t\t${FATAL_ERROR}" && exit 6
+test -z "$OLD_VERSION_FROM_VERSION_FILE" && echo -e "${RED}No 'version' string was found  or old version was set in $VERSION_FILE." && echo -e "If it is a first release just set version to 0.0.0\t\t${FATAL_ERROR}" && exit 6
 }
 
 

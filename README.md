@@ -6,13 +6,10 @@ As default behaviour semver.sh push new version as a tag to remote origin with a
 Can manage separate changelog file and update package version in package version file, for example package.json etc. For detailed description see *Usage* section.
 ## Git commit messages patterns
 For defining new SemVer semver.sh is using commit messages patterns. 
-
 ***Patterns are:***
 - **Major** Version commit pattern:
   - *BREAKING CHANGE*
-
 > Should be always capitalize. Major version pattern always should be put in commit message title or in message body.
-
 - **Minor** Version commit title pattern:
   - *feat:* or *feat(some text|scope here):*
 - **Patch** Version commit title patterns: 
@@ -23,10 +20,18 @@ For defining new SemVer semver.sh is using commit messages patterns.
   - *perf:* or *perf(some text|scope here):*
   - *test:* or *test(some text|scope here):*
   - *chore:* or *chore(some text|scope here):*
-
 > Pattern for minor and patch version could starts with capitale letter or be fully capitalize. They can also include scope as described above.  Always should be put at the begining of the commit's title and have colon at it's end as shown above.
-
-Commits with other patterns wouldn't affect on Semantic Versioning and just will be added in "Other" section of release note(changelog, tag's body).
+> Commits with other patterns wouldn't affect on Semantic Versioning and just will be added in "Other" section of release note(changelog, tag's body).
+## Git commit patterns explanation
+- BREAKING CHANGE - A commit that make backwards incompatible changes
+- feat - A commit that make a new feature. If is backwards incompatible then should contain BREAKING CHANGE in commit's header or body
+- fix - A bug fix
+- docs - Documentation only changes
+- style - Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+- refactor - A code change that neither fixes a bug or adds a feature
+- perf - A code change that improves performance
+- test - Adding missing tests
+- chore - Changes to the build process or auxiliary tools and libraries such as documentation generation
 ## Usage
 ***Options:***
 - **--dry-run**

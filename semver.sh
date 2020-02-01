@@ -124,8 +124,8 @@ fi
 }
 
 function get_last_sem_ver () {
-if git describe --tags --abbrev=0 --always &> /dev/null
-	then	LATEST_GIT_TAG=`git describe --tags --abbrev=0 --always`
+if git describe --tags --abbrev=0 &> /dev/null
+	then	LATEST_GIT_TAG=`git describe --tags --abbrev=0`
 		LATEST_VERSION=`echo $LATEST_GIT_TAG | sed s/v//`
 		LATEST_VERSION_COMMIT=`git rev-list -n 1 $LATEST_GIT_TAG`
 		echo -e "Last release tag is ${GREEN}$LATEST_GIT_TAG${NORMAL} with ${GREEN}$LATEST_VERSION_COMMIT${NORMAL} commit hash"

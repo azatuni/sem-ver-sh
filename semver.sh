@@ -1,5 +1,5 @@
 #!/bin/bash
-#Version: 0.1.0
+#Version: 0.1.1
 #Author: https://github.com/azatuni/sem-ver-sh
 
 
@@ -8,7 +8,7 @@ function set_variables () {
 MAJOR_VERSION_PATTERN="BREAKING CHANGE"
 MINOR_VERSION_PATTERN='feat:\|feat(.*):'
 PATCH_VERSION_PATTERN=('fix:\|fix(.*):' 'docs\|docs(.*):' 'style:\|style(.*):' 'refactor:\|refactor(.*):' 'perf:\|perf(.*):' 'test:\|test(.*):' 'chore:\|chore(.*):')
-#Patterns for every chaneg
+#Patterns for every change
 BREAKING_CHANGE_PATTERN="$MAJOR_VERSION_PATTERN"
 FEATURE_PATTERN="$MINOR_VERSION_PATTERN"
 FIX_PATTERN=${PATCH_VERSION_PATTERN[0]}
